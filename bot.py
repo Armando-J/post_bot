@@ -208,7 +208,7 @@ def editar(message,t,temp):
     else:
         if message.text=='/borrar':
             var=None
-        else: var=message.text.replace('<','')
+        else: var=message.text.replace('<','') if message.text else message.text
         if message.content_type == 'text':
 
             if t=='n':
