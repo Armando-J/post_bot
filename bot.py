@@ -509,4 +509,3 @@ def inicio_bot():
 
 if usercanal and API_TOKEN and id_canal:
     inicio_bot()
-#desarrollo
