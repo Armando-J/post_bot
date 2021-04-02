@@ -2,15 +2,15 @@ import anilist,telebot,emoji,animeBD,traceback
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
 from time import sleep
 from threading import Thread
-
+from os import getenv
 
 def icono(text=''):
     return emoji.emojize(text, use_aliases=True)
 
-usercanal='Anime_S3kai'
-API_TOKEN = 'TOKEN'
+usercanal=getenv('user_canal')
+API_TOKEN = getenv('token')
 bot = telebot.TeleBot(API_TOKEN)
-id_canal=-1001498957713
+id_canal=getenv('id_canal')
 tipD = {'a': 'ANIME', 'm': 'MANGA'}
 boton_empezar=icono('/Empezar')
 t_i=icono('	:writing_hand: Ingrese el título de la multimedia a subir o presione /cancelar para salir.')
@@ -507,4 +507,5 @@ def inicio_bot():
         bot.polling(none_stop=True)
     except:print(traceback.format_exc())
 
-inicio_bot()
+if usercanal and API_TOKEN and id_canal:
+    inicio_bot()
