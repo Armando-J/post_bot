@@ -521,3 +521,5 @@ def inicio_bot():
         try:
             bot.polling(none_stop=True)
         except:print(traceback.format_exc())
+
+if __name__ == '__main__':inicio_bot()
