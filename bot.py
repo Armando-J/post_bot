@@ -2,15 +2,24 @@ import anilist,telebot,emoji,animeBD,traceback
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
 from time import sleep
 from threading import Thread
-from os import getenv
+try:
+    from secure import post_bot
+    id_canal = post_bot.id_canal
+    usercanal = post_bot.usercanal
+    API_TOKEN = post_bot.API_TOKEN
+except:
+    from os import getenv
+    id_canal = getenv('id_canal')
+    usercanal = getenv('user_canal')
+    API_TOKEN = getenv('token')
+
 
 def icono(text=''):
     return emoji.emojize(text, use_aliases=True)
 
-usercanal=getenv('user_canal')
-API_TOKEN = getenv('token')
+
 bot = telebot.TeleBot(API_TOKEN)
-id_canal=getenv('id_canal')
+
 tipD = {'a': 'ANIME', 'm': 'MANGA'}
 boton_empezar=icono('/Empezar')
 t_i=icono('	:writing_hand: Ingrese el título de la multimedia a subir o presione /cancelar para salir.')
@@ -119,6 +128,11 @@ def titulo(message):
                 print(traceback.format_exc())
         else:introducc(message.chat.id,message.chat.first_name)
 
+def error_Html(text):
+    if type(text)== str:
+        return text.replace('<','')
+    else:return ''
+
 @bot.message_handler(func=lambda m: True)
 def echo_all(message):
     introducc(message.chat.id,message.chat.first_name)
@@ -133,7 +147,7 @@ def post_s(id,temp,index):
         f=temp.search[index]['format']
         l=temp.search[index]['coverImage']['extraLarge']
 
-        capt = '<b>{0}\n\nFormato: {1}</b>'.format(t.replace('<',''), f)
+        capt = '<b>{0}\n\nFormato: {1}</b>'.format(error_Html(t), f)
         markup = InlineKeyboardMarkup()
         markup.row(InlineKeyboardButton(boton_sigui,
                                         callback_data='s^{0}'.format(index+1 if index<len(temp.search)-1 else 0)),
@@ -208,7 +222,7 @@ def editar(message,t,temp):
     else:
         if message.text=='/borrar':
             var=None
-        else: var=message.text.replace('<','') if message.text else message.text
+        else: var=error_Html(message.text)
         if message.content_type == 'text':
 
             if t=='n':
@@ -365,7 +379,7 @@ def capsub(message,temp):
     if message.text==boton_cancelar:
         introducc(message.chat.id,message.chat.first_name)
     else:
-        temp.post.episo_up=message.text.replace('<','')
+        temp.post.episo_up=error_Html(message.text)
         animeBD.set_temp(message.chat.id,temp)
         try:sms = bot.send_message(message.chat.id, t_ela)
         except:
@@ -398,7 +412,7 @@ def callback_query(call):
                         temp.search=d
                         post_s(call.from_user.id,temp,0)
                     elif data[0]=='o':
-                        temp.post.titulo=temp.titulo.replace('<','')
+                        temp.post.titulo=error_Html(temp.titulo)
                         post_e(temp, call.from_user.id, markup_e())
 
                     animeBD.set_temp(call.from_user.id, temp)
@@ -424,12 +438,12 @@ def callback_query(call):
                     temp.post.tipo = tipD[temp.tipo]
                     temp.tipo=''
                     temp.post.imagen=p['coverImage']
-                    temp.post.titulo=p['title'].replace('<','')
+                    temp.post.titulo=error_Html(p['title'])
                     temp.post.format=p['format']
                     temp.post.status=p['status']
                     temp.post.episodes=p['episodes']
                     temp.post.genero=p['genres']
-                    temp.post.descripcion=p['description'].replace('<','')
+                    temp.post.descripcion=error_Html(p['description'])
 
                     animeBD.set_temp(call.from_user.id,temp)
 
@@ -499,13 +513,12 @@ def hilo_time():
 
 
 def inicio_bot():
-    g = Thread(target=hilo_time)
-    g.start()
-    print('-----------------------\nBot iniciado\n-----------------------')
-    tx_resumen()
-    try:
-        bot.polling(none_stop=True)
-    except:print(traceback.format_exc())
+    if usercanal and API_TOKEN and id_canal:
+        g = Thread(target=hilo_time)
+        g.start()
+        print('-----------------------\nBot iniciado\n-----------------------')
+        tx_resumen()
+        try:
+            bot.polling(none_stop=True)
+        except:print(traceback.format_exc())
 
-if usercanal and API_TOKEN and id_canal:
-    inicio_bot()
