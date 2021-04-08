@@ -31,6 +31,7 @@ class P_Anime():
         self.version=''
         self.peso=''
         self.sis_j=''
+        self.name_txt=''
 
 def ini_bd():
     return sqlite3.connect('anime.bd')
