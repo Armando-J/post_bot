@@ -281,7 +281,11 @@ def post_e(temp,id,markup=None):
     def aj(txt,var):
         if var:tt.append( txt.format(var))
 
-    tt.append('{0}'.format(':radioactive:<b>{0}</b>\n\n'.format(temp.post.titulo) if temp.post.titulo else ''))
+    tit=':radioactive:{0} {1}\n\n'.format(
+        '({0})'.format(temp.post.tipo[0]) if temp.post.tipo else '',
+        '<b>{0}</b>'.format(temp.post.titulo) if temp.post.titulo else ':expressionless:')
+
+    tt.append(tit)
     aj(':heavy_check_mark:Tipo: <b>{0}</b>\n',temp.post.tipo)
     aj(':heavy_check_mark:Formato: <b>{0}</b>\n',temp.post.format)
     aj(':heavy_check_mark:Episodios: <b>{0}</b>\n', temp.post.episodes)
