@@ -530,3 +530,4 @@ def inicio_bot():
         except:print(traceback.format_exc())
 
 if __name__ == '__main__':inicio_bot()
+#prueba
