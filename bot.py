@@ -9,9 +9,9 @@ try:
     API_TOKEN = post_bot.API_TOKEN
 except:
     import os
-    id_canal = os.environ['id_canal']
-    usercanal = os.environ['usercanal']
-    API_TOKEN = os.environ['token']
+    id_canal = os.environ['ID_CANAL']
+    usercanal = os.environ['USERCANAL']
+    API_TOKEN = os.environ['TOKEN']
 
 
 def icono(text=''):
