@@ -47,6 +47,7 @@ def acceso(id):
     else:
         try:bot.send_message(id,t_ad)
         except:print(traceback.format_exc())
+        return False
 
 def inicio(id):
     if acceso(id):
@@ -81,7 +82,7 @@ def send_welcome(message):
                 try:bot.send_message(message.chat.id,"borrado")
                 except:
                     print(traceback.format_exc())
-                tx_resumen()
+                #tx_resumen()
 
             else:
                 try:bot.send_message(message.chat.id,"error al borrar")
@@ -98,7 +99,7 @@ def send_welcome(message):
     status=bot.get_chat_member(id_canal, message.chat.id).status
     #print(status)
     if status=='creator' or status=='administrator':
-        tx_resumen()
+        #tx_resumen()
         try:bot.send_message(message.chat.id,'Resumen actualizado')
         except:
             print(traceback.format_exc())
@@ -280,7 +281,11 @@ def post_e(temp,id,markup=None):
     def aj(txt,var):
         if var:tt.append( txt.format(var))
 
-    tt.append('{0}'.format(':radioactive:<b>{0}</b>\n\n'.format(temp.post.titulo) if temp.post.titulo else ''))
+    tit=':radioactive:{0} {1}\n\n'.format(
+        '({0})'.format(temp.post.tipo[0]) if temp.post.tipo else '',
+        '<b>{0}</b>'.format(temp.post.titulo) if temp.post.titulo else ':expressionless:')
+
+    tt.append(tit)
     aj(':heavy_check_mark:Tipo: <b>{0}</b>\n',temp.post.tipo)
     aj(':heavy_check_mark:Formato: <b>{0}</b>\n',temp.post.format)
     aj(':heavy_check_mark:Episodios: <b>{0}</b>\n', temp.post.episodes)
@@ -324,7 +329,7 @@ def txtlink(message,temp):
     def finalizar():
         id_sms = post_e(temp, id_canal)
         if temp.post.txt:
-            try:bot.send_document(id_canal, temp.post.txt,caption=temp.post.episo_up)
+            try:bot.send_document(id_canal, temp.post.txt,caption='{0}\n{1}\n(<a href="https://tg.i-c-a.su/media/{2}/{3}">Link Para Delta</a>)'.format(temp.post.episo_up,temp.post.name_txt,usercanal,id_sms+1),parse_mode='html')
             except:
                 print(traceback.format_exc())
         try:bot.send_message(message.chat.id, icono('<a href="https://t.me/{0}/{1}">:white_check_mark: <b>Enviado al canal :exclamation:</b></a>\n\nPresione {2} para crear otro post.'.format(usercanal,id_sms,boton_empezar)),parse_mode='html',disable_web_page_preview=True)
@@ -332,7 +337,7 @@ def txtlink(message,temp):
             print(traceback.format_exc())
         animeBD.aport(message.chat.id)
         animeBD.new_p(id_sms,message.chat.id,temp.post.titulo)
-        tx_resumen()
+        #tx_resumen()
 
     if message.text=='/finalizar':
         finalizar()
@@ -359,6 +364,7 @@ def txtlink(message,temp):
             bot.register_next_step_handler(sms, txtlink, temp)
     elif message.content_type == "document":
         temp.post.txt = message.document.file_id
+        temp.post.name_txt=message.document.file_name
         animeBD.set_temp(message.chat.id, temp)
         if  temp.post.link:
             finalizar()
@@ -471,6 +477,7 @@ def callback_query(call):
 
 
         else:introducc(call.from_user.id,call.from_user.first_name)
+
 def tx_resumen():
     #id_sms,titulo
 
@@ -514,10 +521,10 @@ def hilo_time():
 
 def inicio_bot():
     if usercanal and API_TOKEN and id_canal:
-        g = Thread(target=hilo_time)
-        g.start()
+        #g = Thread(target=hilo_time)
+        #g.start()
         print('-----------------------\nBot iniciado\n-----------------------')
-        tx_resumen()
+        #tx_resumen()
         try:
             bot.polling(none_stop=True)
         except:print(traceback.format_exc())
