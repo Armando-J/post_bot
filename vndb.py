@@ -1,6 +1,6 @@
 """
 	@author: HarHar (https://github.com/HarHar)
-	
+
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation, either version 3 of the License, or
@@ -55,7 +55,7 @@ class VNDB(object):
             print('Authenticated')
 
         self.cache = {'get': []}
-        self.cachetime = 720  # cache stuff for 12 minutes
+        self.cachetime = 600  # cache stuff for 10 minutes
 
     def close(self):
         self.sock.close()
@@ -70,7 +70,9 @@ class VNDB(object):
         """
         args = '{0} {1} {2} {3}'.format(type, flags, filters, options)
         for item in self.cache['get']:
-            if (item['query'] == args) and (time.time() < (item['time'] + self.cachetime)):
+            if time.time() - item['time'] >= self.cachetime:
+                self.cache.pop(item)
+            if item['query'] == args:
                 return item['results']
 
         self.sendCommand('get', args)
@@ -116,7 +118,7 @@ class VNDB(object):
         return (cmdname, args)
 
     def getRawResponse(self):
-        """ Returns a raw response to a command that was previously sent 
+        """ Returns a raw response to a command that was previously sent
 
         Example:
         >>> self.sendCommand('test')
@@ -130,8 +132,3 @@ class VNDB(object):
             if '\x04' in whole:
                 finished = True
         return whole.replace('\x04', '').strip()
-
-
-if __name__ == '__main__':
-    vn = VNDB('darkness', '0.1', debug=True)
-    print(vn.get('vn', 'basic,details', '(title="Clannad")', ''))
