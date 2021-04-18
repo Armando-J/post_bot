@@ -1,4 +1,6 @@
 import anilist,telebot,emoji,animeBD,traceback
+from vndb import VNDB 
+import translate
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
 from time import sleep
 from threading import Thread
@@ -16,6 +18,8 @@ except:
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
+
+vn = VNDB('darkness_posting_bot', '0.1')
 
 def icono(text=''):
     return emoji.emojize(text, use_aliases=True)
@@ -124,6 +128,7 @@ def titulo(message):
             markup = InlineKeyboardMarkup()
             markup.row(InlineKeyboardButton('Anime', callback_data='a'))
             markup.row(InlineKeyboardButton('Manga', callback_data='m'))
+            markup.row(InlineKeyboardButton('Novela Visual', callback_data='vn'))
             #markup.row(InlineKeyboardButton('Juego', callback_data='j'))
             markup.row(InlineKeyboardButton('Otro contenido', callback_data='o'))
             markup.row(InlineKeyboardButton(salir_menu, callback_data='s'))
@@ -141,22 +146,48 @@ def error_Html(text):
 def echo_all(message):
     introducc(message.chat.id,message.chat.first_name)
 
-def post_s(id,temp,index):
-    '''{'id': 30012,
+def post_s(id,temp,index, kind):
+    '''
+        Crea la suguerencia de post
+    '''
+    if (temp.search):
+        if kind == 'animanga':
+            '''
+            {'id': 30012,
                     'title': {'romaji': 'BLEACH'},
                     'format': 'MANGA',
-                    'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30012-z7U138mUaPdN.png'}}, {'id': 41330, 'title': {'romaji': 'Bleach Short Story Edition'}, 'format': 'ONE_SHOT', 'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/11330.jpg'}}'''
-    if (temp.search):
-        t=temp.search[index]['title']['romaji']
-        f=temp.search[index]['format']
-        l=temp.search[index]['coverImage']['extraLarge']
+                    'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30012-z7U138mUaPdN.png'}}, {'id': 41330, 'title': {'romaji': 'Bleach Short Story Edition'}, 'format': 'ONE_SHOT', 'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/11330.jpg'}}
+            '''
+            t=temp.search[index]['title']['romaji']
+            f=temp.search[index]['format']
+            l=temp.search[index]['coverImage']['extraLarge']
+        if kind == 'visualnovel':
+            '''{'aliases': 'クラナド', 
+            'image_nsfw': False, 
+            'image': 'https://s2.vndb.org/cv/52/24252.jpg', 
+            'id': 4, 
+            'title': 'Clannad', 
+            'image_flagging': {'sexual_avg': 0, 'violence_avg': 0, 'votecount': 10}, 
+            'platforms': ['win', 'and', 'psp', 'ps2', 'ps3', 'ps4', 'psv', 'swi', 'vnd', 'xb3', 'mob'], 
+            'length': 5, 
+            'released': 
+            '2004-04-28', 
+            'original': None, 
+            'languages': ['en', 'es', 'it', 'ja', 'ko', 'pt-br', 'ru', 'vi', 'zh'], 
+            'orig_lang': ['ja'], 
+            'links': {'renai': 'clannad', 'wikipedia': 'Clannad_(visual_novel)', 'wikidata': 'Q110607', 'encubed': 'clannad'}, 
+            'description': 'Okazaki Tomoya is a third year high school student at Hikarizaka Private High School, leading a life full of resentment. His mother passed away in a car accident when he was young, leading his father, Naoyuki, to resort to alcohol and gambling to cope. This resulted in constant fights between the two until Naoyuki dislocated Tomoya’s shoulder. Unable to play on his basketball team, Tomoya began to distance himself from other people. Ever since he has had a distant relationship with his father, naturally becoming a delinquent over time.\n\nWhile on a walk to school, Tomoya meets a strange girl named Furukawa Nagisa, questioning if she likes the school at all. He finds himself helping her, and as time goes by, Tomoya finds his life heading towards a new direction.'}
+            '''
+            t=temp.search[index]['title']
+            f='Novela Visual'
+            l=temp.search[index]['image']
 
         capt = '<b>{0}\n\nFormato: {1}</b>'.format(error_Html(t), f)
         markup = InlineKeyboardMarkup()
         markup.row(InlineKeyboardButton(boton_sigui,
-                                        callback_data='s^{0}'.format(index+1 if index<len(temp.search)-1 else 0)),
+                                        callback_data='s^{0}^{1}'.format(index+1 if index<len(temp.search)-1 else 0, kind)),
                    InlineKeyboardButton(boton_selec,
-                                        callback_data='i^{0}'.format(temp.search[index]['id']))
+                                        callback_data='i^{0}^{1}'.format(temp.search[index]['id'], kind))
                    )
 
         markup.row(InlineKeyboardButton(buscar_n,
@@ -419,7 +450,11 @@ def callback_query(call):
                     if data[0]=='a' or data[0]=='m':
                         d = anilist.search(temp.titulo, data[0])
                         temp.search=d
-                        post_s(call.from_user.id,temp,0)
+                        post_s(call.from_user.id,temp,0,'animanga')
+                    elif data[0]=='vn':
+                        d = vn.get(('vn', 'basic,details', f'(title~"{data[1]}")', ''))
+                        temp.search = [item for item in d['items']]
+                        post_s(call.from_user.id,temp,0,'visualnovel')
                     elif data[0]=='o':
                         temp.post.titulo=error_Html(temp.titulo)
                         post_e(temp, call.from_user.id, markup_e())
@@ -428,31 +463,60 @@ def callback_query(call):
 
 
 
-            elif l==2:
+            elif l==3:
                 if data[0]=='s':
-                    post_s(call.from_user.id,temp,int(data[1]))
+                    post_s(call.from_user.id,temp,int(data[1]), data[2])
                 elif data[0]=='i':
-                    p=anilist.get(data[1])
-                    """{'coverImage': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30106-GgFOXeyB70xj.png', 
-                    'title': 'Cardcaptor Sakura', 
-                    'format': 'MANGA', 
-                    'status': 'FINISHED', 
-                    'episodes': None, 
-                    'genres': ['#Adventure', '#Comedy', '#Fantasy', '#Mahou Shoujo', '#Romance'], 
-                    'description': 'El cuarto grado Sakura Kinomoto encuentra un libro ...)'}"""
-                    temp.search=None
-                    temp.titulo=''
+                    if data[2] == 'animanga':
+                        p=anilist.get(data[1])
+                        """{'coverImage': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30106-GgFOXeyB70xj.png', 
+                        'title': 'Cardcaptor Sakura', 
+                        'format': 'MANGA', 
+                        'status': 'FINISHED', 
+                        'episodes': None, 
+                        'genres': ['#Adventure', '#Comedy', '#Fantasy', '#Mahou Shoujo', '#Romance'], 
+                        'description': 'El cuarto grado Sakura Kinomoto encuentra un libro ...)'}"""
+                        temp.search=None
+                        temp.titulo=''
 
-                    temp.post = animeBD.P_Anime()
-                    temp.post.tipo = tipD[temp.tipo]
-                    temp.tipo=''
-                    temp.post.imagen=p['coverImage']
-                    temp.post.titulo=error_Html(p['title'])
-                    temp.post.format=p['format']
-                    temp.post.status=p['status']
-                    temp.post.episodes=p['episodes']
-                    temp.post.genero=p['genres']
-                    temp.post.descripcion=error_Html(p['description'])
+                        temp.post = animeBD.P_Anime()
+                        temp.post.tipo = tipD[temp.tipo]
+                        temp.tipo=''
+                        temp.post.imagen=p['coverImage']
+                        temp.post.titulo=error_Html(p['title'])
+                        temp.post.format=p['format']
+                        temp.post.status=p['status']
+                        temp.post.episodes=p['episodes']
+                        temp.post.genero=p['genres']
+                        temp.post.descripcion=error_Html(p['description'])
+                    if data[2]=='visualnovel':
+                        p=vn.get('vn','basic,details',f'(id={data[1]})','')['items'][0]
+                        '''{'aliases': 'クラナド', 
+                        'image_nsfw': False, 
+                        'image': 'https://s2.vndb.org/cv/52/24252.jpg', 
+                        'id': 4, 
+                        'title': 'Clannad', 
+                        'image_flagging': {'sexual_avg': 0, 'violence_avg': 0, 'votecount': 10}, 
+                        'platforms': ['win', 'and', 'psp', 'ps2', 'ps3', 'ps4', 'psv', 'swi', 'vnd', 'xb3', 'mob'], 
+                        'length': 5, 
+                        'released': 
+                        '2004-04-28', 
+                        'original': None, 
+                        'languages': ['en', 'es', 'it', 'ja', 'ko', 'pt-br', 'ru', 'vi', 'zh'], 
+                        'orig_lang': ['ja'], 
+                        'links': {'renai': 'clannad', 'wikipedia': 'Clannad_(visual_novel)', 'wikidata': 'Q110607', 'encubed': 'clannad'}, 
+                        'description': 'Okazaki Tomoya is a third year high school student at Hikarizaka Private High School, leading a life full of resentment. His mother passed away in a car accident when he was young, leading his father, Naoyuki, to resort to alcohol and gambling to cope. This resulted in constant fights between the two until Naoyuki dislocated Tomoya’s shoulder. Unable to play on his basketball team, Tomoya began to distance himself from other people. Ever since he has had a distant relationship with his father, naturally becoming a delinquent over time.\n\nWhile on a walk to school, Tomoya meets a strange girl named Furukawa Nagisa, questioning if she likes the school at all. He finds himself helping her, and as time goes by, Tomoya finds his life heading towards a new direction.'},
+                        '''
+                        temp.search=None
+                        temp.titulo=''
+
+                        temp.post = animeBD.P_Anime()
+                        temp.post.tipo = tipD[temp.tipo]
+                        temp.tipo=''
+                        temp.post.imagen=p['image']
+                        temp.post.titulo=error_Html(p['title'])
+                        temp.post.format='Visual Novel'
+                        temp.post.descripcion=translate.traducir(error_Html(p['description']))
 
                     animeBD.set_temp(call.from_user.id,temp)
 
