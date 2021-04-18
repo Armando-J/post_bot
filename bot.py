@@ -13,6 +13,9 @@ except:
     usercanal = os.environ['USERCANAL']
     API_TOKEN = os.environ['TOKEN']
 
+import logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
 
 def icono(text=''):
     return emoji.emojize(text, use_aliases=True)
