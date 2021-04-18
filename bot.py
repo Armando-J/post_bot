@@ -27,7 +27,7 @@ def icono(text=''):
 
 bot = telebot.TeleBot(API_TOKEN)
 
-tipD = {'a': 'ANIME', 'm': 'MANGA'}
+tipD = {'a': 'ANIME', 'm': 'MANGA','vn': 'NOVELA VISUAL'}
 boton_empezar=icono('/Empezar')
 t_i=icono('	:writing_hand: Ingrese el título de la multimedia a subir o presione /cancelar para salir.')
 t_ty=icono(':white_check_mark: Seleccione la categoría en que se encuentra la multimedia.')
@@ -221,7 +221,7 @@ def markup_e():
                InlineKeyboardButton('Editar Imagen', callback_data='e^im'))
 
     markup.row(InlineKeyboardButton('Editar Información', callback_data='e^in'),
-               InlineKeyboardButton(icono(':heavy_plus_sign: Màs Categorías :heavy_plus_sign:'), callback_data='m^2'))
+               InlineKeyboardButton(icono(':heavy_plus_sign: Más Categorías :heavy_plus_sign:'), callback_data='m^2'))
 
 
     markup.row(InlineKeyboardButton(salir_menu, callback_data='s'),InlineKeyboardButton(boton_sigui, callback_data='e^c'.format()))
@@ -452,7 +452,7 @@ def callback_query(call):
                         temp.search=d
                         post_s(call.from_user.id,temp,0,'animanga')
                     elif data[0]=='vn':
-                        d = vn.get(('vn', 'basic,details', f'(title~"{data[1]}")', ''))
+                        d = vn.get('vn', 'basic,details', f'(title~"{temp.titulo}")', '')
                         temp.search = [item for item in d['items']]
                         post_s(call.from_user.id,temp,0,'visualnovel')
                     elif data[0]=='o':
@@ -514,15 +514,17 @@ def callback_query(call):
                         temp.post.tipo = tipD[temp.tipo]
                         temp.tipo=''
                         temp.post.imagen=p['image']
+                        temp.post.idioma='‼editar'
+                        temp.post.plata='‼editar'
                         temp.post.titulo=error_Html(p['title'])
-                        temp.post.format='Visual Novel'
                         temp.post.descripcion=translate.traducir(error_Html(p['description']))
 
                     animeBD.set_temp(call.from_user.id,temp)
 
                     post_e(temp,call.from_user.id,markup_e())
 
-                elif data[0]=='e':
+            elif l==2:
+                if data[0]=='e':
                     if data[1]=='c':
 
                         try:sms = bot.send_message(call.from_user.id, t_cap,parse_mode='html')
