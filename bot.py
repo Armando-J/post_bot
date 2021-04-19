@@ -11,15 +11,14 @@ from threading import Thread
 try:
     from secure import post_bot
     id_canal = post_bot.id_canal
-    usercanal = post_bot.usercanal
     API_TOKEN = post_bot.API_TOKEN
     support = post_bot.support
 except:
     import os
     id_canal = os.environ['ID_CANAL']
-    usercanal = os.environ['USERCANAL']
     API_TOKEN = os.environ['TOKEN']
     support = os.environ['SUPPORT']
+
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,6 +31,7 @@ def icono(text=''):
 
 
 bot = telebot.TeleBot(API_TOKEN)
+usercanal=bot.get_chat(id_canal).username
 
 tipD = {'a': 'ANIME', 'm': 'MANGA','vn': 'NOVELA VISUAL'}
 boton_empezar=icono('/Empezar')
