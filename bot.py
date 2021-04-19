@@ -1,4 +1,8 @@
-import anilist,telebot,emoji,animeBD,traceback
+import anilist
+import telebot
+import emoji
+import animeBD
+import traceback
 from vndb import VNDB 
 import translate
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
@@ -9,11 +13,13 @@ try:
     id_canal = post_bot.id_canal
     usercanal = post_bot.usercanal
     API_TOKEN = post_bot.API_TOKEN
+    support = post_bot.support
 except:
     import os
     id_canal = os.environ['ID_CANAL']
     usercanal = os.environ['USERCANAL']
     API_TOKEN = os.environ['TOKEN']
+    support = os.environ['SUPPORT']
 
 import logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -244,8 +250,9 @@ def markup_e1():
     markup.row(InlineKeyboardButton('Editar Creador', callback_data='e^cr'),
                InlineKeyboardButton('Editar Sis de Juego', callback_data='e^sj'))
 
-    markup.row(InlineKeyboardButton(icono(':heavy_plus_sign: Màs Categorías :heavy_plus_sign:'), callback_data='m^1'))
+    markup.row(InlineKeyboardButton('Hacer post anónimo', callback_data='e^anonymity'))
 
+    markup.row(InlineKeyboardButton(icono(':heavy_plus_sign: Más Categorías :heavy_plus_sign:'), callback_data='m^1'))
 
     markup.row(InlineKeyboardButton(salir_menu, callback_data='s'),InlineKeyboardButton(boton_sigui, callback_data='e^c'.format()))
     return markup
@@ -300,7 +307,13 @@ def editar(message,t,temp):
                 temp.post.creador=var
             elif t=='sj':
                 temp.post.sis_j=var
-            elif t=='im':temp.post.imagen=None
+            elif t=='im':
+                temp.post.imagen=None
+            elif t=='anonymity':
+                if var=='/si':
+                    temp.hidden_name = temp.username if temp.username else temp.name
+                    temp.username = None
+                    temp.name = None
 
         elif t=='im' and message.content_type == 'photo':
             temp.post.imagen = message.photo[0].file_id
@@ -341,13 +354,14 @@ def post_e(temp,id,markup=None):
     aj('\n:beginner:Sinopsis: <b>{0}</b>\n', '{0}...'.format(temp.post.descripcion[:500]) if temp.post.descripcion and len(temp.post.descripcion) > 200 else temp.post.descripcion)
     aj('\n\n:warning:Información: <b>{0}</b>\n', temp.post.inf)
     tt.append('\n:star:Aporte #{0} de {1}'.format(
-        animeBD.get_aport(temp.id_user)+1,'@' + temp.username if temp.username else temp.name))
+        animeBD.get_aport(temp.id_user)+1,('@' if temp.username else '') + (temp.username if temp.username else temp.name if temp.name else 'Anónimo')))
     if temp.post.link:tt.append('\n\n:link:Link: <a href="{0}"><b>{1}</b></a>'.format(temp.post.link,temp.post.episo_up))
 
     capt = icono(''.join(tt))
     try:
         if temp.post.imagen:
-            try:vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
+            try:
+                vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
             except:
                 print(traceback.format_exc())
             return vvvv
@@ -366,7 +380,13 @@ def txtlink(message,temp):
             try:bot.send_document(id_canal, temp.post.txt,caption='{0}\n{1}\n(<a href="https://tg.i-c-a.su/media/{2}/{3}">Link Para Delta</a>)'.format(temp.post.episo_up,temp.post.name_txt,usercanal,id_sms+1),parse_mode='html')
             except:
                 print(traceback.format_exc())
-        try:bot.send_message(message.chat.id, icono('<a href="https://t.me/{0}/{1}">:white_check_mark: <b>Enviado al canal :exclamation:</b></a>\n\nPresione {2} para crear otro post.'.format(usercanal,id_sms,boton_empezar)),parse_mode='html',disable_web_page_preview=True)
+        try:
+            bot.send_message(message.chat.id, icono('<a href="https://t.me/{0}/{1}">:white_check_mark: <b>Enviado al canal :exclamation:</b></a>\n\nPresione {2} para crear otro post.'.format(usercanal,id_sms,boton_empezar)),parse_mode='html',disable_web_page_preview=True)
+            if temp.hidden_name:
+                try:
+                    bot.send_message(support, '@' + temp.hidden_name + f'<a href="https://t.me/{usercanal}/{id_sms}"> ha usado el modo anónimo</a>',parse_mode='html',disable_web_page_preview=True)
+                except:
+                    print(traceback.format_exc())
         except:
             print(traceback.format_exc())
         animeBD.aport(message.chat.id)
@@ -531,6 +551,11 @@ def callback_query(call):
                         except:
                             print(traceback.format_exc())
                         bot.register_next_step_handler(sms, capsub,temp)
+                    elif data[1]=='anonymity':
+                        try:sms=bot.send_message(call.from_user.id, '😑 aunque la comunidad no lo vea, los admins si, no lo intentes usar para el mal\n /si    /no')
+                        except:
+                            print(traceback.format_exc())
+                        bot.register_next_step_handler(sms, editar,data[1],temp )
                     else:
                         try:sms=bot.send_message(call.from_user.id, 'Envíe los nuevos datos o presione /borrar para borrar esa categoría.')
                         except:
