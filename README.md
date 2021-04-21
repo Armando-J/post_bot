@@ -1,4 +1,4 @@
-# post_bot
+# post_bot ( Mejoras del bot en https://github.com/RathHunt/post_bot )
 
 Bot de Telegram
 
