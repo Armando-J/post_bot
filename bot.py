@@ -1,39 +1,26 @@
-import anilist
-import telebot
-import emoji
-import animeBD
-import traceback
-from vndb import VNDB 
-import translate
+import anilist,telebot,emoji,animeBD,traceback
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
 from time import sleep
 from threading import Thread
 try:
     from secure import post_bot
     id_canal = post_bot.id_canal
+    usercanal = post_bot.usercanal
     API_TOKEN = post_bot.API_TOKEN
-    support = post_bot.support
 except:
     import os
     id_canal = os.environ['ID_CANAL']
+    usercanal = os.environ['USERCANAL']
     API_TOKEN = os.environ['TOKEN']
-    support = os.environ['SUPPORT']
 
-
-import logging
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
-
-vn = VNDB('darkness_posting_bot', '0.1')
 
 def icono(text=''):
     return emoji.emojize(text, use_aliases=True)
 
 
 bot = telebot.TeleBot(API_TOKEN)
-usercanal=bot.get_chat(id_canal).username
 
-tipD = {'a': 'ANIME', 'm': 'MANGA','vn': 'NOVELA VISUAL'}
+tipD = {'a': 'ANIME', 'm': 'MANGA'}
 boton_empezar=icono('/Empezar')
 t_i=icono('	:writing_hand: Ingrese el título de la multimedia a subir o presione /cancelar para salir.')
 t_ty=icono(':white_check_mark: Seleccione la categoría en que se encuentra la multimedia.')
@@ -134,7 +121,6 @@ def titulo(message):
             markup = InlineKeyboardMarkup()
             markup.row(InlineKeyboardButton('Anime', callback_data='a'))
             markup.row(InlineKeyboardButton('Manga', callback_data='m'))
-            markup.row(InlineKeyboardButton('Novela Visual', callback_data='vn'))
             #markup.row(InlineKeyboardButton('Juego', callback_data='j'))
             markup.row(InlineKeyboardButton('Otro contenido', callback_data='o'))
             markup.row(InlineKeyboardButton(salir_menu, callback_data='s'))
@@ -152,48 +138,22 @@ def error_Html(text):
 def echo_all(message):
     introducc(message.chat.id,message.chat.first_name)
 
-def post_s(id,temp,index, kind):
-    '''
-        Crea la suguerencia de post
-    '''
-    if (temp.search):
-        if kind == 'animanga':
-            '''
-            {'id': 30012,
+def post_s(id,temp,index):
+    '''{'id': 30012,
                     'title': {'romaji': 'BLEACH'},
                     'format': 'MANGA',
-                    'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30012-z7U138mUaPdN.png'}}, {'id': 41330, 'title': {'romaji': 'Bleach Short Story Edition'}, 'format': 'ONE_SHOT', 'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/11330.jpg'}}
-            '''
-            t=temp.search[index]['title']['romaji']
-            f=temp.search[index]['format']
-            l=temp.search[index]['coverImage']['extraLarge']
-        if kind == 'visualnovel':
-            '''{'aliases': 'クラナド', 
-            'image_nsfw': False, 
-            'image': 'https://s2.vndb.org/cv/52/24252.jpg', 
-            'id': 4, 
-            'title': 'Clannad', 
-            'image_flagging': {'sexual_avg': 0, 'violence_avg': 0, 'votecount': 10}, 
-            'platforms': ['win', 'and', 'psp', 'ps2', 'ps3', 'ps4', 'psv', 'swi', 'vnd', 'xb3', 'mob'], 
-            'length': 5, 
-            'released': 
-            '2004-04-28', 
-            'original': None, 
-            'languages': ['en', 'es', 'it', 'ja', 'ko', 'pt-br', 'ru', 'vi', 'zh'], 
-            'orig_lang': ['ja'], 
-            'links': {'renai': 'clannad', 'wikipedia': 'Clannad_(visual_novel)', 'wikidata': 'Q110607', 'encubed': 'clannad'}, 
-            'description': 'Okazaki Tomoya is a third year high school student at Hikarizaka Private High School, leading a life full of resentment. His mother passed away in a car accident when he was young, leading his father, Naoyuki, to resort to alcohol and gambling to cope. This resulted in constant fights between the two until Naoyuki dislocated Tomoya’s shoulder. Unable to play on his basketball team, Tomoya began to distance himself from other people. Ever since he has had a distant relationship with his father, naturally becoming a delinquent over time.\n\nWhile on a walk to school, Tomoya meets a strange girl named Furukawa Nagisa, questioning if she likes the school at all. He finds himself helping her, and as time goes by, Tomoya finds his life heading towards a new direction.'}
-            '''
-            t=temp.search[index]['title']
-            f='Novela Visual'
-            l=temp.search[index]['image']
+                    'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30012-z7U138mUaPdN.png'}}, {'id': 41330, 'title': {'romaji': 'Bleach Short Story Edition'}, 'format': 'ONE_SHOT', 'coverImage': {'large': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/11330.jpg'}}'''
+    if (temp.search):
+        t=temp.search[index]['title']['romaji']
+        f=temp.search[index]['format']
+        l=temp.search[index]['coverImage']['extraLarge']
 
         capt = '<b>{0}\n\nFormato: {1}</b>'.format(error_Html(t), f)
         markup = InlineKeyboardMarkup()
         markup.row(InlineKeyboardButton(boton_sigui,
-                                        callback_data='s^{0}^{1}'.format(index+1 if index<len(temp.search)-1 else 0, kind)),
+                                        callback_data='s^{0}'.format(index+1 if index<len(temp.search)-1 else 0)),
                    InlineKeyboardButton(boton_selec,
-                                        callback_data='i^{0}^{1}'.format(temp.search[index]['id'], kind))
+                                        callback_data='i^{0}'.format(temp.search[index]['id']))
                    )
 
         markup.row(InlineKeyboardButton(buscar_n,
@@ -227,7 +187,7 @@ def markup_e():
                InlineKeyboardButton('Editar Imagen', callback_data='e^im'))
 
     markup.row(InlineKeyboardButton('Editar Información', callback_data='e^in'),
-               InlineKeyboardButton(icono(':heavy_plus_sign: Más Categorías :heavy_plus_sign:'), callback_data='m^2'))
+               InlineKeyboardButton(icono(':heavy_plus_sign: Màs Categorías :heavy_plus_sign:'), callback_data='m^2'))
 
 
     markup.row(InlineKeyboardButton(salir_menu, callback_data='s'),InlineKeyboardButton(boton_sigui, callback_data='e^c'.format()))
@@ -250,9 +210,8 @@ def markup_e1():
     markup.row(InlineKeyboardButton('Editar Creador', callback_data='e^cr'),
                InlineKeyboardButton('Editar Sis de Juego', callback_data='e^sj'))
 
-    markup.row(InlineKeyboardButton('Hacer post anónimo', callback_data='e^anonymity'))
+    markup.row(InlineKeyboardButton(icono(':heavy_plus_sign: Màs Categorías :heavy_plus_sign:'), callback_data='m^1'))
 
-    markup.row(InlineKeyboardButton(icono(':heavy_plus_sign: Más Categorías :heavy_plus_sign:'), callback_data='m^1'))
 
     markup.row(InlineKeyboardButton(salir_menu, callback_data='s'),InlineKeyboardButton(boton_sigui, callback_data='e^c'.format()))
     return markup
@@ -307,13 +266,7 @@ def editar(message,t,temp):
                 temp.post.creador=var
             elif t=='sj':
                 temp.post.sis_j=var
-            elif t=='im':
-                temp.post.imagen=None
-            elif t=='anonymity':
-                if var=='/si':
-                    temp.hidden_name = temp.username if temp.username else temp.name
-                    temp.username = None
-                    temp.name = None
+            elif t=='im':temp.post.imagen=None
 
         elif t=='im' and message.content_type == 'photo':
             temp.post.imagen = message.photo[0].file_id
@@ -354,14 +307,13 @@ def post_e(temp,id,markup=None):
     aj('\n:beginner:Sinopsis: <b>{0}</b>\n', '{0}...'.format(temp.post.descripcion[:500]) if temp.post.descripcion and len(temp.post.descripcion) > 200 else temp.post.descripcion)
     aj('\n\n:warning:Información: <b>{0}</b>\n', temp.post.inf)
     tt.append('\n:star:Aporte #{0} de {1}'.format(
-        animeBD.get_aport(temp.id_user)+1,('@' if temp.username else '') + (temp.username if temp.username else temp.name if temp.name else 'Anónimo')))
+        animeBD.get_aport(temp.id_user)+1,'@' + temp.username if temp.username else temp.name))
     if temp.post.link:tt.append('\n\n:link:Link: <a href="{0}"><b>{1}</b></a>'.format(temp.post.link,temp.post.episo_up))
 
     capt = icono(''.join(tt))
     try:
         if temp.post.imagen:
-            try:
-                vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
+            try:vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
             except:
                 print(traceback.format_exc())
             return vvvv
@@ -380,13 +332,7 @@ def txtlink(message,temp):
             try:bot.send_document(id_canal, temp.post.txt,caption='{0}\n{1}\n(<a href="https://tg.i-c-a.su/media/{2}/{3}">Link Para Delta</a>)'.format(temp.post.episo_up,temp.post.name_txt,usercanal,id_sms+1),parse_mode='html')
             except:
                 print(traceback.format_exc())
-        try:
-            bot.send_message(message.chat.id, icono('<a href="https://t.me/{0}/{1}">:white_check_mark: <b>Enviado al canal :exclamation:</b></a>\n\nPresione {2} para crear otro post.'.format(usercanal,id_sms,boton_empezar)),parse_mode='html',disable_web_page_preview=True)
-            if temp.hidden_name:
-                try:
-                    bot.send_message(support, '@' + temp.hidden_name + f'<a href="https://t.me/{usercanal}/{id_sms}"> ha usado el modo anónimo</a>',parse_mode='html',disable_web_page_preview=True)
-                except:
-                    print(traceback.format_exc())
+        try:bot.send_message(message.chat.id, icono('<a href="https://t.me/{0}/{1}">:white_check_mark: <b>Enviado al canal :exclamation:</b></a>\n\nPresione {2} para crear otro post.'.format(usercanal,id_sms,boton_empezar)),parse_mode='html',disable_web_page_preview=True)
         except:
             print(traceback.format_exc())
         animeBD.aport(message.chat.id)
@@ -470,11 +416,7 @@ def callback_query(call):
                     if data[0]=='a' or data[0]=='m':
                         d = anilist.search(temp.titulo, data[0])
                         temp.search=d
-                        post_s(call.from_user.id,temp,0,'animanga')
-                    elif data[0]=='vn':
-                        d = vn.get('vn', 'basic,details', f'(title~"{temp.titulo}")', '')
-                        temp.search = [item for item in d['items']]
-                        post_s(call.from_user.id,temp,0,'visualnovel')
+                        post_s(call.from_user.id,temp,0)
                     elif data[0]=='o':
                         temp.post.titulo=error_Html(temp.titulo)
                         post_e(temp, call.from_user.id, markup_e())
@@ -483,79 +425,43 @@ def callback_query(call):
 
 
 
-            elif l==3:
+            elif l==2:
                 if data[0]=='s':
-                    post_s(call.from_user.id,temp,int(data[1]), data[2])
+                    post_s(call.from_user.id,temp,int(data[1]))
                 elif data[0]=='i':
-                    if data[2] == 'animanga':
-                        p=anilist.get(data[1])
-                        """{'coverImage': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30106-GgFOXeyB70xj.png', 
-                        'title': 'Cardcaptor Sakura', 
-                        'format': 'MANGA', 
-                        'status': 'FINISHED', 
-                        'episodes': None, 
-                        'genres': ['#Adventure', '#Comedy', '#Fantasy', '#Mahou Shoujo', '#Romance'], 
-                        'description': 'El cuarto grado Sakura Kinomoto encuentra un libro ...)'}"""
-                        temp.search=None
-                        temp.titulo=''
+                    p=anilist.get(data[1])
+                    """{'coverImage': 'https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx30106-GgFOXeyB70xj.png', 
+                    'title': 'Cardcaptor Sakura', 
+                    'format': 'MANGA', 
+                    'status': 'FINISHED', 
+                    'episodes': None, 
+                    'genres': ['#Adventure', '#Comedy', '#Fantasy', '#Mahou Shoujo', '#Romance'], 
+                    'description': 'El cuarto grado Sakura Kinomoto encuentra un libro ...)'}"""
+                    temp.search=None
+                    temp.titulo=''
 
-                        temp.post = animeBD.P_Anime()
-                        temp.post.tipo = tipD[temp.tipo]
-                        temp.tipo=''
-                        temp.post.imagen=p['coverImage']
-                        temp.post.titulo=error_Html(p['title'])
-                        temp.post.format=p['format']
-                        temp.post.status=p['status']
-                        temp.post.episodes=p['episodes']
-                        temp.post.genero=p['genres']
-                        temp.post.descripcion=error_Html(p['description'])
-                    if data[2]=='visualnovel':
-                        p=vn.get('vn','basic,details',f'(id={data[1]})','')['items'][0]
-                        '''{'aliases': 'クラナド', 
-                        'image_nsfw': False, 
-                        'image': 'https://s2.vndb.org/cv/52/24252.jpg', 
-                        'id': 4, 
-                        'title': 'Clannad', 
-                        'image_flagging': {'sexual_avg': 0, 'violence_avg': 0, 'votecount': 10}, 
-                        'platforms': ['win', 'and', 'psp', 'ps2', 'ps3', 'ps4', 'psv', 'swi', 'vnd', 'xb3', 'mob'], 
-                        'length': 5, 
-                        'released': 
-                        '2004-04-28', 
-                        'original': None, 
-                        'languages': ['en', 'es', 'it', 'ja', 'ko', 'pt-br', 'ru', 'vi', 'zh'], 
-                        'orig_lang': ['ja'], 
-                        'links': {'renai': 'clannad', 'wikipedia': 'Clannad_(visual_novel)', 'wikidata': 'Q110607', 'encubed': 'clannad'}, 
-                        'description': 'Okazaki Tomoya is a third year high school student at Hikarizaka Private High School, leading a life full of resentment. His mother passed away in a car accident when he was young, leading his father, Naoyuki, to resort to alcohol and gambling to cope. This resulted in constant fights between the two until Naoyuki dislocated Tomoya’s shoulder. Unable to play on his basketball team, Tomoya began to distance himself from other people. Ever since he has had a distant relationship with his father, naturally becoming a delinquent over time.\n\nWhile on a walk to school, Tomoya meets a strange girl named Furukawa Nagisa, questioning if she likes the school at all. He finds himself helping her, and as time goes by, Tomoya finds his life heading towards a new direction.'},
-                        '''
-                        temp.search=None
-                        temp.titulo=''
-
-                        temp.post = animeBD.P_Anime()
-                        temp.post.tipo = tipD[temp.tipo]
-                        temp.tipo=''
-                        temp.post.imagen=p['image']
-                        temp.post.idioma='‼editar'
-                        temp.post.plata='‼editar'
-                        temp.post.titulo=error_Html(p['title'])
-                        temp.post.descripcion=translate.traducir(error_Html(p['description']))
+                    temp.post = animeBD.P_Anime()
+                    temp.post.tipo = tipD[temp.tipo]
+                    temp.tipo=''
+                    temp.post.imagen=p['coverImage']
+                    temp.post.titulo=error_Html(p['title'])
+                    temp.post.format=p['format']
+                    temp.post.status=p['status']
+                    temp.post.episodes=p['episodes']
+                    temp.post.genero=p['genres']
+                    temp.post.descripcion=error_Html(p['description'])
 
                     animeBD.set_temp(call.from_user.id,temp)
 
                     post_e(temp,call.from_user.id,markup_e())
 
-            elif l==2:
-                if data[0]=='e':
+                elif data[0]=='e':
                     if data[1]=='c':
 
                         try:sms = bot.send_message(call.from_user.id, t_cap,parse_mode='html')
                         except:
                             print(traceback.format_exc())
                         bot.register_next_step_handler(sms, capsub,temp)
-                    elif data[1]=='anonymity':
-                        try:sms=bot.send_message(call.from_user.id, '😑 aunque la comunidad no lo vea, los admins si, no lo intentes usar para el mal\n /si    /no')
-                        except:
-                            print(traceback.format_exc())
-                        bot.register_next_step_handler(sms, editar,data[1],temp )
                     else:
                         try:sms=bot.send_message(call.from_user.id, 'Envíe los nuevos datos o presione /borrar para borrar esa categoría.')
                         except:
