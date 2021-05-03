@@ -33,10 +33,10 @@ salir_menu=icono(':house: Salir')
 buscar_n=icono(':arrow_right_hook: Volver a buscar con otro texto')
 t_cap=icono(':writing_hand: Escriba los cap o el fragmento que contiene el link/txt a subir.\n\n<code> cap 1 - cap 33</code>\n<code>Completo</code>\n<code>Primera parte</code>  etc)\n\no presione /cancelar para salir.')
 t_l=icono(':link: Envíe el link o presione /finalizar')
-t_el=icono(':dizzy_face: Error! Envíe el link/txt {0}')
-t_at=icono(':memo: Envíe el archivo txt o presione /finalizar ')
-t_li=icono(':dizzy_face: Link incorrecto por favor vuelva a enviarlo {0}')
-t_ela=icono('Envíe el link :link: y/o el txt :memo: de la multimedia a subir.')
+t_el=icono(':dizzy_face: Error! repita de nuevo la función anterior{0}.')
+t_at=icono(':memo: Envíe ahora el archivo txt o presione /finalizar para enviar al canal.')
+t_li=icono(':dizzy_face: Link incorrecto, por favor vuelva a enviarlo correctamente o presione /cancelar para salir.')
+t_ela=icono(':link: Ponga el link s3 del txt.\nEste se obtiene enviando el txt a toDus o de la misma forma que envió las partes.')
 t_ad=icono(':expressionless: Lo sentimos, debe ser miembro del canal @{0} para poder usar el bot.\n\n/Empezar'.format(usercanal))
 
 def acceso(id):
@@ -329,7 +329,7 @@ def txtlink(message,temp):
     def finalizar():
         id_sms = post_e(temp, id_canal)
         if temp.post.txt:
-            try:bot.send_document(id_canal, temp.post.txt,caption='{0}\n{1}\n(<a href="https://tg.i-c-a.su/media/{2}/{3}">Link Para Delta</a>)'.format(temp.post.episo_up,temp.post.name_txt,usercanal,id_sms+1),parse_mode='html')
+            try:bot.send_document(id_canal, temp.post.txt,caption=temp.post.episo_up,parse_mode='html')
             except:
                 print(traceback.format_exc())
         try:bot.send_message(message.chat.id, icono('<a href="https://t.me/{0}/{1}">:white_check_mark: <b>Enviado al canal :exclamation:</b></a>\n\nPresione {2} para crear otro post.'.format(usercanal,id_sms,boton_empezar)),parse_mode='html',disable_web_page_preview=True)
@@ -339,43 +339,43 @@ def txtlink(message,temp):
         animeBD.new_p(id_sms,message.chat.id,temp.post.titulo)
         #tx_resumen()
 
-    if message.text=='/finalizar':
-        finalizar()
-    elif message.text=='/cancelar':
-        introducc(message.chat.id,message.chat.first_name)
+    if message.content_type == 'text':
 
-    elif message.content_type == 'text':
-        if 'HTTP://' in message.text.upper() or 'HTTPS://' in message.text.upper() :
+        if message.text=='/finalizar' and temp.post.link:
+            finalizar()
+        elif message.text=='/cancelar':
+            introducc(message.chat.id,message.chat.first_name)
+
+        elif 'HTTP://' in message.text.upper() or 'HTTPS://' in message.text.upper() :
             temp.post.link=message.text
             animeBD.set_temp(message.chat.id, temp)
-            if  temp.post.txt:
-                finalizar()
-            else:
-                try:sms = bot.send_message(message.chat.id, t_at)
-                except:
-                    print(traceback.format_exc())
-                bot.register_next_step_handler(sms, txtlink, temp)
+
+            try:sms = bot.send_message(message.chat.id, t_at)
+            except:
+                print(traceback.format_exc())
+            bot.register_next_step_handler(sms, txtlink, temp)
+
+        elif temp.post.link:
+            try:sms=bot.send_message(message.chat.id,t_at)
+            except:
+                print(traceback.format_exc())
+            bot.register_next_step_handler(sms, txtlink, temp)
 
         else:
-            try:sms=bot.send_message(message.chat.id,t_li.format(
-                'o presione /finalizar' if temp.post.link or temp.post.txt else ''))
+            try:sms=bot.send_message(message.chat.id,t_li)
             except:
                 print(traceback.format_exc())
             bot.register_next_step_handler(sms, txtlink, temp)
-    elif message.content_type == "document":
+
+    elif message.content_type == "document" and temp.post.link:
         temp.post.txt = message.document.file_id
-        temp.post.name_txt=message.document.file_name
+        #temp.post.name_txt=message.document.file_name
         animeBD.set_temp(message.chat.id, temp)
-        if  temp.post.link:
-            finalizar()
-        else:
-            try:sms = bot.send_message(message.chat.id, t_l)
-            except:
-                print(traceback.format_exc())
-            bot.register_next_step_handler(sms, txtlink, temp)
+        finalizar()
+
     else:
         try:sms = bot.send_message(message.chat.id, t_el.format(
-            'o presione /finalizar' if temp.post.link or temp.post.txt else '' ))
+            ' o presione /finalizar para enviar al canal.' if temp.post.link else '' ))
         except:
             print(traceback.format_exc())
         bot.register_next_step_handler(sms, txtlink, temp)
