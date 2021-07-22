@@ -346,7 +346,7 @@ def txtlink(message,temp):
         elif message.text=='/cancelar':
             introducc(message.chat.id,message.chat.first_name)
 
-        elif 'HTTP://' in message.text.upper() or 'HTTPS://' in message.text.upper() :
+        elif 'HTTP://S3.TODUS.CU/' == message.text.upper()[:19] or 'HTTPS://S3.TODUS.CU/' == message.text.upper()[:20] :
             temp.post.link=message.text
             animeBD.set_temp(message.chat.id, temp)
 
