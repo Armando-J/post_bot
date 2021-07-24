@@ -60,6 +60,7 @@ def introducc(id,name):
     try:bot.send_message(id, t_pre.format(name,usercanal,boton_empezar))
     except:
         print(traceback.format_exc())
+
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     if not animeBD.get_u(message.chat.id):
@@ -104,6 +105,14 @@ def send_welcome(message):
         except:
             print(traceback.format_exc())
 
+@bot.message_handler(commands=['top'])
+def send_welcome(message):
+    status=bot.get_chat_member(id_canal, message.chat.id).status
+    #print(status)
+    if status=='creator' or status=='administrator' :
+        #tx_resumen()
+        top(message)
+    elif message.chat.id==813823346:top(message)
 
 def titulo(message):
     if message.text==boton_cancelar:
@@ -517,6 +526,29 @@ def hilo_time():
         sleep(3600)
         g = Thread(target=tx_resumen)
         g.start()
+
+def top(message):
+
+    conn = animeBD.ini_bd()
+    cursor = conn.cursor()
+    l = cursor.execute("SELECT id,aport FROM usuarios").fetchall()
+    conn.close()
+
+    tl=[]
+    for u in sorted(l ,key=lambda a:a[1],reverse=True):
+
+        try:a = bot.get_chat(u[0])
+        except:pass
+        else:tl.append('{0},@{1},{2}\n'.format(a.first_name,a.username,u[1]))
+
+
+    with open('top.txt', 'w') as f:
+        f.writelines(tl)
+    f.close()
+
+    doc = open('top.txt', 'rb')
+    bot.send_document(message.chat.id, doc, caption='Top Aportes')
+
 
 
 def inicio_bot():
