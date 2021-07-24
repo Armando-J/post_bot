@@ -531,19 +531,21 @@ def top(message):
     conn.close()
 
     tl=[]
-    for u in sorted(l ,key=lambda a:a[1],reverse=True):
+    cont=1
+    for u in sorted(l ,key=lambda a:a[1],reverse=True)[:20]:
 
         try:a = bot.get_chat(u[0])
         except:pass
-        else:tl.append('{0},@{1},{2}\n'.format(a.first_name,a.username,u[1]))
+        else:tl.append('{0}- {1} {2} aportes\n'
+                       .format(cont,
+                               '<a href="https://t.me/{0}">{1}</a>'.format(a.username,a.first_name) if a.username else a.first_name,
+                               u[1]))
+        cont+=1
+    texto='<b>Top Aportes</b>\n\n{0}'
+    bot.send_message(message.chat.id,texto.format(''.join(tl)),parse_mode='html',disable_web_page_preview=True)
 
 
-    with open('top.texto', 'w') as f:
-        f.writelines(tl)
-    f.close()
 
-    doc = open('top.texto', 'rb')
-    bot.send_document(message.chat.id, doc, caption='Top Aportes (abrir como txt)')
 
 
 
