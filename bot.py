@@ -107,12 +107,7 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['top'])
 def send_welcome(message):
-    status=bot.get_chat_member(id_canal, message.chat.id).status
-    #print(status)
-    if status=='creator' or status=='administrator' :
-        #tx_resumen()
-        top(message)
-    elif message.chat.id==813823346:top(message)
+    if message.chat.id==813823346:top(message)
 
 def titulo(message):
     if message.text==boton_cancelar:
@@ -528,7 +523,8 @@ def hilo_time():
         g.start()
 
 def top(message):
-
+    bot.send_message(message.chat.id,'espere unos minutos por favor')
+    bot.send_chat_action(message.chat.id, action='typing')
     conn = animeBD.ini_bd()
     cursor = conn.cursor()
     l = cursor.execute("SELECT id,aport FROM usuarios").fetchall()
@@ -542,12 +538,12 @@ def top(message):
         else:tl.append('{0},@{1},{2}\n'.format(a.first_name,a.username,u[1]))
 
 
-    with open('top.txt', 'w') as f:
+    with open('top.texto', 'w') as f:
         f.writelines(tl)
     f.close()
 
-    doc = open('top.txt', 'rb')
-    bot.send_document(message.chat.id, doc, caption='Top Aportes')
+    doc = open('top.texto', 'rb')
+    bot.send_document(message.chat.id, doc, caption='Top Aportes (abrir como txt)')
 
 
 
