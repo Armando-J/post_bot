@@ -317,10 +317,17 @@ def post_e(temp,id,markup=None):
     capt = icono(''.join(tt))
     try:
         if temp.post.imagen:
-            try:vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
-            except:
-                print(traceback.format_exc())
-            return vvvv
+            caracteres=len(capt)
+            if caracteres<=1024:
+                try:vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
+                except:
+                    print(traceback.format_exc())
+                return vvvv
+            else:
+                vvvv=bot.send_message(id, 'Error ,el texto del post en general tiene {0} caracteres y '
+                                  'no debe superar los 1024. Vuelva a intentarlo por favor editando con los botones inferiores.'.format(
+                    caracteres),reply_markup=markup).id
+                return vvvv
         else:
             try:vvvv=bot.send_message(id, capt, parse_mode='html', reply_markup=markup,disable_web_page_preview=True).id
             except:
@@ -514,7 +521,6 @@ def tx_resumen():
         try:bot.pin_chat_message(id_canal,id,disable_notification=True)
         except Exception as e:print('pin resumen',e)
 
-
 def hilo_time():
 
     while True:
@@ -536,18 +542,15 @@ def top(message):
 
         try:a = bot.get_chat(u[0])
         except:pass
-        else:tl.append('{0}- {1} {2} aportes\n'
+        else:
+            nombre=a.first_name if a.first_name else a.last_name if a.last_name else 'Usuario'
+            tl.append('{0}- {1} {2} pts\n'
                        .format(cont,
-                               '<a href="https://t.me/{0}">{1}</a>'.format(a.username,a.first_name) if a.username else a.first_name,
+                               '<a href="https://t.me/{0}">{1}</a>'.format(a.username,nombre) if a.username else nombre ,
                                u[1]))
         cont+=1
     texto='<b>Top Aportes</b>\n\n{0}'
     bot.send_message(message.chat.id,texto.format(''.join(tl)),parse_mode='html',disable_web_page_preview=True)
-
-
-
-
-
 
 def inicio_bot():
     if usercanal and API_TOKEN and id_canal:
