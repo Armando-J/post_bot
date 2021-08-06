@@ -1,5 +1,6 @@
-import anilist,telebot,emoji,animeBD,traceback
+import anilist,telebot,emoji,animeBD,traceback,re
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
+from time import sleep
 
 try:
     from secure import post_bot
@@ -187,6 +188,16 @@ def markup_e1():
     markup.row(InlineKeyboardButton(salir_menu, callback_data='s'),InlineKeyboardButton(boton_sigui, callback_data='e^c'.format()))
     return markup
 
+def filter(text: str):
+    url_regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))"
+    username_regex = r"\B@\w+"
+    t_me_link = r"t\.me\/[-a-zA-Z0-9.]+(\/\S*)?"
+
+    if re.match(url_regex, text) or re.search(username_regex, text) or re.search(t_me_link, text):
+        return False
+
+    return True
+
 def editar(message,t,temp):
     if message.text==boton_cancelar:
         introducc(message.chat.id,message.chat.first_name)
@@ -195,6 +206,14 @@ def editar(message,t,temp):
             var=None
         else: var=error_Html(message.text)
         if message.content_type == 'text':
+
+            if var and not filter (var):
+                bot.send_message(message.chat.id, 'No se permiten lins ni usernames ')
+                sleep(2)
+                post_e(temp,message.chat.id,temp.markup if temp.markup else markup_e())
+                return
+
+            temp1=temp[:]
 
             if t=='n':
                 temp.post.titulo=var
@@ -238,6 +257,14 @@ def editar(message,t,temp):
                 temp.post.sis_j=var
             elif t=='im':temp.post.imagen=None
 
+            if temp.post.imagen:
+                caracteres = len(make_message_body(temp))
+                if caracteres > 1024:
+                    bot.send_message(message.chat.id, 'Mucho texto !!! Vuelva a intentarlo editando con menos.')
+                    sleep(2)
+                    post_e(temp1, message.chat.id, temp.markup if temp.markup else markup_e())
+                    return
+
         elif t=='im' and message.content_type == 'photo':
             temp.post.imagen = message.photo[0].file_id
 
@@ -245,18 +272,19 @@ def editar(message,t,temp):
         animeBD.set_temp(message.chat.id,temp)
         post_e(temp,message.chat.id,temp.markup if temp.markup else markup_e())
 
-def post_e(temp,id,markup=None):
-    tt=[]
-    def aj(txt,var):
-        if var:tt.append( txt.format(var))
+def make_message_body(temp: animeBD.Temp):
+    tt = []
 
-    tit=':radioactive:{0} {1}\n\n'.format(
+    def aj(txt, var):
+        if var: tt.append(txt.format(var))
+
+    tit = ':radioactive:{0} {1}\n\n'.format(
         '({0})'.format(temp.post.tipo[0]) if temp.post.tipo else '',
         '<b>{0}</b>'.format(temp.post.titulo) if temp.post.titulo else ':expressionless:')
 
     tt.append(tit)
-    aj(':heavy_check_mark:Tipo: <b>{0}</b>\n',temp.post.tipo)
-    aj(':heavy_check_mark:Formato: <b>{0}</b>\n',temp.post.format)
+    aj(':heavy_check_mark:Tipo: <b>{0}</b>\n', temp.post.tipo)
+    aj(':heavy_check_mark:Formato: <b>{0}</b>\n', temp.post.format)
     aj(':heavy_check_mark:Episodios: <b>{0}</b>\n', temp.post.episodes)
     aj(':heavy_check_mark:Temporada: <b>{0}</b>\n', temp.post.temporada)
     aj(':heavy_check_mark:Tomo: <b>{0}</b>\n', temp.post.tomos)
@@ -266,33 +294,34 @@ def post_e(temp,id,markup=None):
     aj(':heavy_check_mark:Idioma: <b>{0}</b>\n', temp.post.idioma)
     aj(':hourglass_flowing_sand:Duración: <b>{0}</b>\n', temp.post.duracion)
     aj(':heavy_check_mark:Géneros: <b>{0}</b>\n',
-       ', '.join(temp.post.genero) if type(temp.post.genero)==list else temp.post.genero)
+       ', '.join(temp.post.genero) if type(temp.post.genero) == list else temp.post.genero)
     aj(':heavy_check_mark:Estudio: <b>{0}</b>\n', temp.post.estudio)
     aj(':heavy_check_mark:Sistema de juego: <b>{0}</b>\n', temp.post.sis_j)
     aj(':floppy_disk:Peso: <b>{0}</b>\n', temp.post.peso)
     aj(':heavy_check_mark:Versión: <b>{0}</b>\n', temp.post.version)
     aj(':heavy_check_mark:Creador: <b>{0}</b>\n', temp.post.creador)
     aj(':heavy_check_mark:Estado: <b>{0}</b>\n', temp.post.status)
-    aj('\n:beginner:Sinopsis: <b>{0}</b>\n', '{0}...'.format(temp.post.descripcion[:500]) if temp.post.descripcion and len(temp.post.descripcion) > 200 else temp.post.descripcion)
+    aj('\n:beginner:Sinopsis: <b>{0}</b>\n',
+       '{0}...'.format(temp.post.descripcion[:500]) if temp.post.descripcion and len(
+           temp.post.descripcion) > 200 else temp.post.descripcion)
     aj('\n\n:warning:Información: <b>{0}</b>\n', temp.post.inf)
     tt.append('\n:star:Aporte #{0} de {1}'.format(
-        animeBD.get_aport(temp.id_user)+1,'@' + temp.username if temp.username else temp.name))
-    if temp.post.link:tt.append('\n\n:link:Link: <a href="{0}"><b>{1}</b></a>'.format(temp.post.link,temp.post.episo_up))
+        animeBD.get_aport(temp.id_user) + 1, '@' + temp.username if temp.username else temp.name))
+    if temp.post.link: tt.append(
+        '\n\n:link:Link: <a href="{0}"><b>{1}</b></a>'.format(temp.post.link, temp.post.episo_up))
 
-    capt = icono(''.join(tt))
+    return icono(''.join(tt))
+
+def post_e(temp,id,markup=None):
+    capt = make_message_body(temp)
     try:
         if temp.post.imagen:
-            caracteres=len(capt)
-            if caracteres<=1024:
-                try:vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
-                except:
-                    print(traceback.format_exc())
-                return vvvv
-            else:
-                vvvv=bot.send_message(id, 'Error ,el texto del post en general tiene {0} caracteres y '
-                                  'no debe superar los 1024. Vuelva a intentarlo por favor editando con los botones inferiores.'.format(
-                    caracteres),reply_markup=markup).id
-                return vvvv
+
+            try:vvvv=bot.send_photo(id, temp.post.imagen, capt, parse_mode='html', reply_markup=markup).id
+            except:
+                print(traceback.format_exc())
+            return vvvv
+
         else:
             try:vvvv=bot.send_message(id, capt, parse_mode='html', reply_markup=markup,disable_web_page_preview=True).id
             except:
