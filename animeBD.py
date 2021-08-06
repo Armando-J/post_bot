@@ -81,14 +81,17 @@ def get_temp(id):
 
     cursor.execute("SELECT temp FROM usuarios WHERE id=%s;", (id,))
     l = cursor.fetchone()
-    cursor.close()
-    conn.close()
+
     if l:
+        cursor.close()
+        conn.close()
         return pickle.loads(l[0])
-    else:#esta por gusto esto
-        new_u(id,Temp())
+    else:
+        new_u(id,Temp(),conn,cursor)
+        cursor.close()
+        conn.close()
         get_temp(id)
-        return False
+        #return False
 
 def aport(id):
     conn,cursor = ini_bd()
