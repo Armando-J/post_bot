@@ -260,10 +260,13 @@ def editar(message,t,temp):
 
             if temp.post.imagen:
                 caracteres = len(make_message_body(temp))
+                print(caracteres)
+                caracteres = len(make_message_body(temp1))
+                print(caracteres)
                 if caracteres > 1024:
                     bot.send_message(message.chat.id, 'Mucho texto !!! Vuelva a intentarlo editando con menos.')
                     sleep(2)
-                    post_e(temp1, message.chat.id, temp.markup if temp.markup else markup_e())
+                    post_e(temp1, message.chat.id, temp1.markup if temp1.markup else markup_e())
                     return
 
         elif t=='im' and message.content_type == 'photo':
