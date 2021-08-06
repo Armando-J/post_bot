@@ -4,3 +4,4 @@ pyTelegramBotAPI
 emoji
 requests
 chardet==3.*
+psycopg2

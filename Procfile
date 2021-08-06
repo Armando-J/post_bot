@@ -1,2 +1,1 @@
-worker: python3 bot.py
-ps:scale worker=1
+bot: python3 bot.py
