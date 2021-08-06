@@ -213,7 +213,7 @@ def editar(message,t,temp):
                 post_e(temp,message.chat.id,temp.markup if temp.markup else markup_e())
                 return
 
-            temp1=temp[:]
+            temp1=temp
 
             if t=='n':
                 temp.post.titulo=var
