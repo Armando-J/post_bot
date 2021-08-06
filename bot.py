@@ -1,6 +1,7 @@
 import anilist,telebot,emoji,animeBD,traceback,re
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
 from time import sleep
+from copy import copy
 
 try:
     from secure import post_bot
@@ -213,7 +214,7 @@ def editar(message,t,temp):
                 post_e(temp,message.chat.id,temp.markup if temp.markup else markup_e())
                 return
 
-            temp1=temp
+            temp1=copy(temp)
 
             if t=='n':
                 temp.post.titulo=var
