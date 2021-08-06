@@ -1,5 +1,13 @@
-import sqlite3,pickle
-from time import time
+import pickle
+import psycopg2
+from os import environ
+
+try:
+    from secure.s_view_counter import database_url
+    database_url()
+except:pass
+
+DATABASE_URL=environ['DATABASE_URL']
 
 class Temp():
     def __init__(self):
@@ -32,132 +40,109 @@ class P_Anime():
         self.peso=''
         self.sis_j=''
 
-
 def ini_bd():
-    return sqlite3.connect('anime.bd')
-
-def get_u(id):
-    conn = ini_bd()
+    conn = psycopg2.connect(DATABASE_URL, sslmode="require")
     cursor = conn.cursor()
+    return conn, cursor
 
-    l = cursor.execute("SELECT id FROM usuarios WHERE id=?", (id,)).fetchone()
-    conn.close()
+def get_u(id,cursor):
+
+    cursor.execute("SELECT id FROM usuarios WHERE id=%s;", (id,))
+    l =cursor.fetchone()
+
     if l:
         return True
     else:
         return False
 
-def new_u(id,temp):
+def new_u(id,temp,conn,cursor):
     try:
         l=(id,pickle.dumps(temp),0)
-        conn = ini_bd()
-        cursor = conn.cursor()
-        cursor.execute("INSERT INTO usuarios VALUES (?,?,?)",l)
+
+        cursor.execute("INSERT INTO usuarios (id, temp, aport) VALUES (%s ,%s,%s);", l)
+
         conn.commit()
-        conn.close()
+
     except :
-        conn.close()
         return False
     else:return True
 
 def set_temp(id,temp):
-    conn=ini_bd()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE usuarios SET temp=? WHERE id=?", (pickle.dumps(temp), id))
+    conn,cursor=ini_bd()
+
+    cursor.execute("UPDATE usuarios SET temp=%s WHERE id=%s;", (pickle.dumps(temp), id))
+
     conn.commit()
+    cursor.close()
     conn.close()
 
 def get_temp(id):
-    conn = ini_bd()
-    cursor = conn.cursor()
-    l = cursor.execute("SELECT temp FROM usuarios WHERE id=?", (id,)).fetchone()
+    conn,cursor = ini_bd()
+
+    cursor.execute("SELECT temp FROM usuarios WHERE id=%s;", (id,))
+    l = cursor.fetchone()
+    cursor.close()
     conn.close()
     if l:
         return pickle.loads(l[0])
-    else:
+    else:#esta por gusto esto
         new_u(id,Temp())
         get_temp(id)
         return False
 
-
 def aport(id):
-    conn = ini_bd()
-    cursor = conn.cursor()
-    l = cursor.execute("SELECT aport FROM usuarios WHERE id=?", (id,)).fetchone()[0]
-    cursor.execute("UPDATE usuarios SET aport=? WHERE id=?", (l+1, id))
+    conn,cursor = ini_bd()
+
+    cursor.execute("UPDATE usuarios SET aport=aport+1 WHERE id=%s;", (id,))
+
     conn.commit()
+    cursor.close()
     conn.close()
 
 def get_aport(id):
-    conn = ini_bd()
-    cursor = conn.cursor()
-    l = cursor.execute("SELECT aport FROM usuarios WHERE id=?", (id,)).fetchone()[0]
-    conn.close()
-    return l
+    conn,cursor = ini_bd()
 
-def new_p(id_sms,id_user,titulo):
+    cursor.execute("SELECT aport FROM usuarios WHERE id=%s;", (id,))
+    l = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+    return l[0]
+
+'''def new_p(id_sms,id_user,titulo):
     l=(time()//3600,id_sms,id_user,titulo)
-    conn = ini_bd()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO posts VALUES (null,?,?,?,?)",l)
+    conn,cursor = ini_bd()
+
+    cursor.execute("INSERT INTO posts (time ,id_sms ,id_user , titulo) VALUES (%s ,%s,%s,%s);", l)
+
     conn.commit()
+    cursor.close()
     conn.close()
 
 def del_post(id_sms):
     try:
-        conn = ini_bd()
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM posts WHERE id_sms=?", (id_sms,))
+        conn,cursor = ini_bd()
+
+        cursor.execute("DELETE FROM posts WHERE id_sms=%s;", (id_sms,))
+
         conn.commit()
+        cursor.close()
         conn.close()
     except :
+        cursor.close()
         conn.close()
         return False
-    else:return True
-
-def get_resumen():
-    conn = ini_bd()
-    cursor = conn.cursor()
-    l = cursor.execute("SELECT id_sms,titulo FROM posts WHERE ?-time < 25",(time()//3600,)).fetchall()
-    conn.close()
-    return l
-
-def get_id_re():
-    conn = ini_bd()
-    cursor = conn.cursor()
-    l = cursor.execute("SELECT id_sms FROM generales ").fetchone()
-    conn.close()
-    return l[0] if l else l
-
-def set_id_re(id_sms):
-    try:
-        conn = ini_bd()
-        cursor = conn.cursor()
-        cursor.execute('DROP TABLE generales')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS generales
-                     (id_sms INTEGER)''')
-
-        cursor.execute("INSERT INTO generales VALUES (?)",(id_sms,))
-        conn.commit()
-        conn.close()
-    except :
-        conn.close()
-        return False
-    else:return True
+    else:return True'''
 
 
-
-
-conn=ini_bd()
-cursor=conn.cursor()
+conn,cursor=ini_bd()
 
 cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios
-             (id text PRIMARY KEY, temp Binary ,aport INTEGER)''')
+             (id INTEGER PRIMARY KEY, temp Bytea ,aport INTEGER);''')
 
-cursor.execute('''CREATE TABLE IF NOT EXISTS posts
-             (id_post INTEGER PRIMARY KEY AUTOINCREMENT,time INTEGER ,id_sms INTEGER, id_user INTEGER, titulo TEXT)''')
+"""cursor.execute('''CREATE TABLE IF NOT EXISTS posts
+             (id_post SERIAL PRIMARY KEY,time INTEGER ,id_sms INTEGER, id_user INTEGER, titulo TEXT);''') """
 
-cursor.execute('''CREATE TABLE IF NOT EXISTS generales
-             (id_sms INTEGER)''')
-
+conn.commit()
+cursor.close()
 conn.close()
