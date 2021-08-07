@@ -1,7 +1,6 @@
 import anilist,telebot,emoji,animeBD,traceback,re
 from telebot.types import InlineKeyboardButton,InlineKeyboardMarkup
 from time import sleep
-from copy import copy
 
 try:
     from secure import post_bot
@@ -214,59 +213,59 @@ def editar(message,t,temp):
                 post_e(temp,message.chat.id,temp.markup if temp.markup else markup_e())
                 return
 
-            temp1=copy(temp)
+            def add_var(t,var):
+                if t=='n':
+                    temp.post.titulo=var
+                elif t=='e':
+                    temp.post.episodes = var
+                elif t=='m':
+                    temp.post.temporada=var
+                elif t=='a':
+                    temp.post.audio=var
+                elif t=='g':
+                    temp.post.genero=var
+                elif t=='s':
+                    temp.post.status=var
+                elif t=='i':
+                    temp.post.descripcion=var
+                elif t=='t':
+                    temp.post.tipo=var
+                elif t=='f':
+                    temp.post.format=var
+                elif t=='in':
+                    temp.post.inf=var
+                elif t=='to':
+                    temp.post.tomos=var
+                elif t=='p':
+                    temp.post.plata=var
+                elif t=='es':
+                    temp.post.estudio=var
+                elif t=='id':
+                    temp.post.idioma=var
+                elif t=='d':
+                    temp.post.duracion=var
+                elif t=='v':
+                    temp.post.volumen=var
+                elif t=='ve':
+                    temp.post.version=var
+                elif t=='pe':
+                    temp.post.peso=var
+                elif t=='cr':
+                    temp.post.creador=var
+                elif t=='sj':
+                    temp.post.sis_j=var
+                elif t=='im':temp.post.imagen=None
 
-            if t=='n':
-                temp.post.titulo=var
-            elif t=='e':
-                temp.post.episodes = var
-            elif t=='m':
-                temp.post.temporada=var
-            elif t=='a':
-                temp.post.audio=var
-            elif t=='g':
-                temp.post.genero=var
-            elif t=='s':
-                temp.post.status=var
-            elif t=='i':
-                temp.post.descripcion=var
-            elif t=='t':
-                temp.post.tipo=var
-            elif t=='f':
-                temp.post.format=var
-            elif t=='in':
-                temp.post.inf=var
-            elif t=='to':
-                temp.post.tomos=var
-            elif t=='p':
-                temp.post.plata=var
-            elif t=='es':
-                temp.post.estudio=var
-            elif t=='id':
-                temp.post.idioma=var
-            elif t=='d':
-                temp.post.duracion=var
-            elif t=='v':
-                temp.post.volumen=var
-            elif t=='ve':
-                temp.post.version=var
-            elif t=='pe':
-                temp.post.peso=var
-            elif t=='cr':
-                temp.post.creador=var
-            elif t=='sj':
-                temp.post.sis_j=var
-            elif t=='im':temp.post.imagen=None
+            add_var(t,var)
 
             if temp.post.imagen:
                 caracteres = len(make_message_body(temp))
-                print(caracteres)
-                caracteres = len(make_message_body(temp1))
-                print(caracteres)
+
                 if caracteres > 1024:
                     bot.send_message(message.chat.id, 'Mucho texto !!! Vuelva a intentarlo editando con menos.')
                     sleep(2)
-                    post_e(temp1, message.chat.id, temp1.markup if temp1.markup else markup_e())
+                    add_var(t,None)#borra la variable añadida
+                    post_e(temp, message.chat.id, temp.markup if temp.markup else markup_e())
                     return
 
         elif t=='im' and message.content_type == 'photo':
