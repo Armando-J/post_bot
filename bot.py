@@ -208,7 +208,7 @@ def editar(message,t,temp):
         if message.content_type == 'text':
 
             if var and not filter (var):
-                bot.send_message(message.chat.id, 'No se permiten lins ni usernames ')
+                bot.send_message(message.chat.id, 'No se permite url ni user_name.')
                 sleep(2)
                 post_e(temp,message.chat.id,temp.markup if temp.markup else markup_e())
                 return
