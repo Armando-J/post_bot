@@ -262,7 +262,7 @@ def editar(message,t,temp):
                 caracteres = len(make_message_body(temp))
 
                 if caracteres > 1024:
-                    bot.send_message(message.chat.id, 'Mucho texto !!! Vuelva a intentarlo editando con menos.')
+                    bot.send_message(message.chat.id, 'Mucho texto !!! Vuelva a intentarlo editando lo mismo pero con {0} letras de menos.'.format(caracteres-1024))
                     sleep(2)
                     add_var(t,None)#borra la variable añadida
                     post_e(temp, message.chat.id, temp.markup if temp.markup else markup_e())
