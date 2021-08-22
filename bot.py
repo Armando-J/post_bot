@@ -297,7 +297,7 @@ def make_message_body(temp: animeBD.Temp):
     aj(':heavy_check_mark:Idioma: <b>{0}</b>\n', temp.post.idioma)
     aj(':hourglass_flowing_sand:Duración: <b>{0}</b>\n', temp.post.duracion)
     aj(':heavy_check_mark:Géneros: <b>{0}</b>\n',
-       ', '.join(temp.post.genero) if type(temp.post.genero) == list else temp.post.genero)
+       ' '.join(temp.post.genero) if type(temp.post.genero) == list else temp.post.genero)
     aj(':heavy_check_mark:Estudio: <b>{0}</b>\n', temp.post.estudio)
     aj(':heavy_check_mark:Sistema de juego: <b>{0}</b>\n', temp.post.sis_j)
     aj(':floppy_disk:Peso: <b>{0}</b>\n', temp.post.peso)
